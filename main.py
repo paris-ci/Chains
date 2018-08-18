@@ -55,11 +55,14 @@ class BaseCorpus:
 
             i = random.randrange(sum(possibilites_counter.values()))
 
-            next_word = next(itertools.islice(possibilites_counter.elements(), i, None))
+            if i == 0:
+                next_word = "__END__"  # Didn't find the word in the corpus
+            else:
+                next_word = next(itertools.islice(possibilites_counter.elements(), i, None))
 
             current.append(next_word)
 
-        string = " ".join(current[:-1]).capitalize()
+        string = " ".join(current[:-1]).capitalize() + "."
         return string
 
 
