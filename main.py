@@ -201,7 +201,7 @@ class DuckHuntCorpus(BaseCorpus):
             else:
                 lines_parsed.append(message)
 
-        lines_parsed = lines_parsed
+        lines_parsed = sorted(lines_parsed)
 
         end_length = len(lines_parsed)
         end_time = time.time()
