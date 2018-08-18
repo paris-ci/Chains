@@ -27,10 +27,16 @@ class BaseCorpus:
     def make_sentence(self, max_words: int = None):
         s = self.model.make_sentence(max_words=max_words)
 
+        if not s:
+            s = 'None'
+            
         return s
 
     def make_short_sentence(self, chars: int = 140, more_or_less: int = 20):
         s = self.model.make_short_sentence(max_chars=chars + more_or_less, min_chars=chars - more_or_less)
+
+        if not s:
+            s = 'None'
 
         return s
 
