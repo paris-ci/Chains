@@ -1,5 +1,6 @@
 import time
 import typing
+import unicodedata
 
 import markovify
 import requests
@@ -89,6 +90,7 @@ class DuckHuntCorpus(BaseCorpus):
             start_length += 1
             line = line.decode()
             message = line.lower().strip()
+            message = unicodedata.normalize(message)
 
             if len(message) < 2:
                 continue
@@ -102,9 +104,6 @@ class DuckHuntCorpus(BaseCorpus):
             for word in message.split(" "):
                 if len(word) > 15:
                     break
-
-
-
             else:
                 lines_parsed.append(message)
 
