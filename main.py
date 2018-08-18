@@ -100,7 +100,7 @@ class DuckHuntCorpus(BaseCorpus):
                 message_ = message
 
             message = message_
-            
+
             message = unicodedata.normalize('NFKD', message)
 
             if len(message) < 2:
@@ -156,7 +156,7 @@ try:
         if inp_ is None:
             inp_ = inp
 
-        print(c.make_sentence_with_start(inp).capitalize())
+        print(c.make_sentence_with_start(inp_).capitalize())
 except:
     print("bai!")
     raise
