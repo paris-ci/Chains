@@ -1,8 +1,10 @@
+import collections
+import random
 import time
 import typing
 import unicodedata
 
-import markovify
+import itertools
 import requests
 from tqdm import tqdm
 
@@ -12,7 +14,7 @@ class BaseCorpus:
         pass
 
     @property
-    def model(self) -> typing.Union[markovify.NewlineText, markovify.Text]:
+    def model(self) -> dict:
         # In subclasses, you'd have to do something so that we can use the model with self.model
         return None
 
@@ -24,33 +26,41 @@ class BaseCorpus:
     def model(self):
         pass
 
-    def make_sentence(self, max_words: int = None):
-        s = self.model.make_sentence(max_words=max_words)
+    def create_markov(self, sentences: list) -> dict:
+        start_time = time.time()
 
-        if not s:
-            s = 'None'
+        model = collections.defaultdict(collections.Counter)
 
-        return s
+        for sentence in tqdm(sentences, desc="Processing corpus into the model"):
+            sentence_splitted = sentence.split(" ")
+            next_word = sentence_splitted[0]
+            for i in range(len(sentence_splitted) - 1):
+                current_word = sentence_splitted[i]
+                next_word = sentence_splitted[i + 1]
 
-    def make_short_sentence(self, chars: int = 140, more_or_less: int = 20):
-        s = self.model.make_short_sentence(max_chars=chars + more_or_less, min_chars=chars - more_or_less)
+                model[current_word][next_word] += 1
 
-        if not s:
-            s = 'None'
+            model[next_word]["__END__"] += 1
 
-        return s
+        end_time = time.time()
+        print(f"Processing the corpus into the model took {round(end_time-start_time, 3)}s")
 
-    def make_sentence_with_start(self, start: str):
-        s = self.model.make_sentence_with_start(start.lower().strip(), strict=False)
+        return model
 
-        if not s:
-            s = 'None'
+    def make_sentence_with_start(self, start: str) -> str:
+        current = start.split(" ")
+        while current[-1] != "__END__":
+            current_word = current[-1]
+            possibilites_counter = self.model[current_word]
 
-        return s
+            i = random.randrange(sum(possibilites_counter.values()))
 
-    def save(self, file_name):
-        with open(file_name, 'w') as file:
-            file.write(self.model.to_json())
+            next_word = next(itertools.islice(possibilites_counter.elements(), i, None))
+
+            current.append(next_word)
+
+        string = " ".join(current[:-1]).capitalize()
+        return string
 
 
 class DuckHuntCorpus(BaseCorpus):
@@ -136,34 +146,11 @@ class DuckHuntCorpus(BaseCorpus):
 
         return lines_parsed
 
-    def create_markov(self, sentences: list) -> markovify.NewlineText:
-
-        parsed_corpus = [[word for word in s.split(" ")] for s in sentences]
-
-        start_time = time.time()
-
-        model = markovify.Text("", parsed_sentences=parsed_corpus, state_size=4, retain_original=False)
-
-        end_time = time.time()
-        print(f"Processing the corpus into the model took {round(end_time-start_time, 3)}s")
-
-
-        return model
-
-    def load(self, file_name):
-        start_time = time.time()
-        with open(file_name, 'r') as file:
-            model = markovify.NewlineText.from_json(file.read())
-
-        end_time = time.time()
-        print(f'Recovered model from file in {round(end_time-start_time, 3)}s')
-        self.model = model
-
 
 c = DuckHuntCorpus()
-#c.save('model.json')
 
-c.model # Pre-load
+c.model  # Pre-load
+
 print("I AM READY!\n\n")
 
 try:
