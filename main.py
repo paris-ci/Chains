@@ -142,7 +142,7 @@ class DuckHuntCorpus(BaseCorpus):
 
         start_time = time.time()
 
-        model = markovify.Text("", parsed_sentences=parsed_corpus, state_size=4)
+        model = markovify.Text("", parsed_sentences=parsed_corpus, state_size=4, retain_original=False)
 
         end_time = time.time()
         print(f"Processing the corpus into the model took {round(end_time-start_time, 3)}s")
