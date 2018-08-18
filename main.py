@@ -88,7 +88,7 @@ class DuckHuntCorpus(BaseCorpus):
 
         return r
 
-    def process_corpus(self, file: requests.Response) -> str:
+    def process_corpus(self, file: requests.Response) -> list:
 
         start_length = 0
         start_time = time.time()
@@ -132,16 +132,17 @@ class DuckHuntCorpus(BaseCorpus):
         end_length = len(lines_parsed)
         end_time = time.time()
 
-        ct = "\n".join(lines_parsed)
-
         print(f"Fixing the corpus text took {round(end_time-start_time, 3)}s, and the corpus was trimmed from {start_length} to {end_length} lines (diff: {end_length-start_length})")
 
-        return ct
+        return lines_parsed
 
-    def create_markov(self, text: str) -> markovify.NewlineText:
+    def create_markov(self, sentences: list) -> markovify.NewlineText:
+
+        parsed_corpus = [[word for word in s.split(" ")] for s in sentences]
+
         start_time = time.time()
 
-        model = markovify.NewlineText(text, state_size=4)
+        model = markovify.Text("", parsed_sentences=parsed_corpus, state_size=4)
 
         end_time = time.time()
         print(f"Processing the corpus into the model took {round(end_time-start_time, 3)}s")
