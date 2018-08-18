@@ -4,9 +4,16 @@ import time
 import typing
 import unicodedata
 
+import coloredlogs
+import logging
+
 import itertools
 import requests
 from tqdm import tqdm
+
+coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)03d <%(levelname)s> %(message)s')
+logging.debug("hey")
+logging.info("Hello!")
 
 
 class WordNotFoundInCorpus(Exception):
@@ -36,7 +43,7 @@ class BaseCorpus:
         model = collections.defaultdict(collections.Counter)
 
         for sentence in tqdm(sentences, desc="Processing corpus into the model"):
-            splitted = [''] * self.depth + sentence.split(" ") + ['__END__']
+            splitted = [''] * self.depth + sentence.split() + ['__END__']
 
             for i in range(len(splitted) - self.depth):
                 words_current = tuple(splitted[i:i+self.depth])
@@ -45,13 +52,13 @@ class BaseCorpus:
                 model[words_current][word_next] += 1
 
         end_time = time.time()
-        print(f"Processing the corpus into the model took {round(end_time-start_time, 3)}s")
+        logging.debug(f"Processing the corpus into the model took {round(end_time-start_time, 3)}s")
 
         return dict(model)
 
     def make_sentence_with_start(self, start: str) -> str:
         current = collections.deque(maxlen=self.depth)
-        start_list = start.strip().split(" ")
+        start_list = start.strip().split()
 
         current.extend([''] * (self.depth - len(current)))
 
@@ -63,7 +70,10 @@ class BaseCorpus:
             try:
                 possibilites_counter = self.model[tuple(current)]
             except KeyError:
-                raise WordNotFoundInCorpus
+                raise WordNotFoundInCorpus(f"Word(s) {list(current)} not found in corpus")
+
+            logging.debug(f"[Make sentence]\n  > [current] = {list(current)}\n  > [possibilities] = {possibilites_counter.most_common(5)}(...) \n  > [total] = {total}")
+
 
             s = sum(possibilites_counter.values())
             if s == 0:
@@ -148,7 +158,7 @@ class DuckHuntCorpus(BaseCorpus):
             if any([x in message for x in ['nigga', 'http', 'discord.gg', 'fuck', 'hentai']]):
                 continue
 
-            splitted = message.split(" ")
+            splitted = message.split()
 
             if len(splitted) < self.depth:
                 continue
@@ -164,7 +174,7 @@ class DuckHuntCorpus(BaseCorpus):
         end_length = len(lines_parsed)
         end_time = time.time()
 
-        print(f"Fixing the corpus text took {round(end_time-start_time, 3)}s, and the corpus was trimmed from {start_length} to {end_length} lines (diff: {end_length-start_length})")
+        logging.debug(f"Fixing the corpus text took {round(end_time-start_time, 3)}s, and the corpus was trimmed from {start_length} to {end_length} lines (diff: {end_length-start_length})")
 
         return lines_parsed
 
@@ -173,7 +183,7 @@ c = DuckHuntCorpus()
 
 c.model  # Pre-load
 
-print("I AM READY!\n\n")
+logging.info("I AM READY!\n\n")
 
 try:
     while True:
@@ -191,8 +201,8 @@ try:
 
         try:
             print(c.make_sentence_with_start(inp_))
-        except WordNotFoundInCorpus:
-            print(f"Word(s) {inp_} not found in corpus")
+        except WordNotFoundInCorpus as e:
+            logging.warning(str(e))
 except:
     print("bai!")
     raise

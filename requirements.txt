@@ -1,3 +1,4 @@
 markovify
 requests
 tqdm
+coloredlogs
