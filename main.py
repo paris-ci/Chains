@@ -132,6 +132,7 @@ class DuckHuntCorpus(BaseCorpus):
 
 c = DuckHuntCorpus()
 c.save('model.json')
+print("I AM READY!\n\n")
 
 while True:
-    print(c.make_sentence_with_start(input('>')))
+    print(c.make_sentence_with_start(input('>>>')))
