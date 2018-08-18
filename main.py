@@ -9,9 +9,13 @@ import requests
 from tqdm import tqdm
 
 
+class WordNotFoundInCorpus(Exception):
+    pass
+
+
 class BaseCorpus:
     def __init__(self):
-        pass
+        self.depth = 3
 
     @property
     def model(self) -> dict:
@@ -32,36 +36,47 @@ class BaseCorpus:
         model = collections.defaultdict(collections.Counter)
 
         for sentence in tqdm(sentences, desc="Processing corpus into the model"):
-            sentence_splitted = sentence.split(" ")
-            next_word = sentence_splitted[0]
-            for i in range(len(sentence_splitted) - 1):
-                current_word = sentence_splitted[i]
-                next_word = sentence_splitted[i + 1]
+            splitted = [''] * self.depth + sentence.split(" ") + ['__END__']
 
-                model[current_word][next_word] += 1
+            for i in range(len(splitted) - self.depth):
+                words_current = tuple(splitted[i:i+self.depth])
+                word_next = splitted[i+self.depth]
 
-            model[next_word]["__END__"] += 1
+                model[words_current][word_next] += 1
 
         end_time = time.time()
         print(f"Processing the corpus into the model took {round(end_time-start_time, 3)}s")
 
-        return model
+        return dict(model)
 
     def make_sentence_with_start(self, start: str) -> str:
-        current = start.split(" ")
+        current = collections.deque(maxlen=self.depth)
+        start_list = start.strip().split(" ")
+
+        current.extend([''] * (self.depth - len(current)))
+
+        current.extend(start_list)
+
+        total = start_list[:]
+
         while current[-1] != "__END__":
-            current_word = current[-1]
-            possibilites_counter = self.model[current_word]
+            try:
+                possibilites_counter = self.model[tuple(current)]
+            except KeyError:
+                raise WordNotFoundInCorpus
+
             s = sum(possibilites_counter.values())
             if s == 0:
-                next_word = "__END__"  # Didn't find the word in the corpus
+                raise Exception
+                #  next_word = "__END__"  # Didn't find the word in the corpus
             else:
                 i = random.randrange(s)
                 next_word = next(itertools.islice(possibilites_counter.elements(), i, None))
 
             current.append(next_word)
+            total.append(next_word)
 
-        string = " ".join(current[:-1]).capitalize() + "."
+        string = " ".join(total[:-1]).capitalize() + "."
         return string
 
 
@@ -133,7 +148,12 @@ class DuckHuntCorpus(BaseCorpus):
             if any([x in message for x in ['nigga', 'http', 'discord.gg', 'fuck', 'hentai']]):
                 continue
 
-            for word in message.split(" "):
+            splitted = message.split(" ")
+
+            if len(splitted) < self.depth:
+                continue
+
+            for word in splitted:
                 if len(word) > 15:
                     break
             else:
@@ -167,7 +187,10 @@ try:
         if inp_ is None:
             inp_ = inp
 
-        print(c.make_sentence_with_start(inp_).capitalize())
+        try:
+            print(c.make_sentence_with_start(inp_))
+        except WordNotFoundInCorpus:
+            print(f"Word(s) {inp_} not found in corpus")
 except:
     print("bai!")
     raise
