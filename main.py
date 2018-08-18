@@ -132,12 +132,22 @@ class DuckHuntCorpus(BaseCorpus):
         end_length = len(lines_parsed)
         end_time = time.time()
 
-        print(f"Processing the corpus took {round(end_time-start_time, 3)}s, and the corpus was trimmed from {start_length} to {end_length} lines (diff: {end_length-start_length})")
+        ct = "\n".join(lines_parsed)
 
-        return "\n".join(lines_parsed)
+        print(f"Fixing the corpus text took {round(end_time-start_time, 3)}s, and the corpus was trimmed from {start_length} to {end_length} lines (diff: {end_length-start_length})")
+
+        return ct
 
     def create_markov(self, text: str) -> markovify.NewlineText:
-        return markovify.NewlineText(text, state_size=4) #retain_original=False)
+        start_time = time.time()
+
+        model = markovify.NewlineText(text, state_size=4)
+
+        end_time = time.time()
+        print(f"Processing the corpus into the model took {round(end_time-start_time, 3)}s")
+
+
+        return model
 
     def load(self, file_name):
         start_time = time.time()
@@ -151,6 +161,8 @@ class DuckHuntCorpus(BaseCorpus):
 
 c = DuckHuntCorpus()
 #c.save('model.json')
+
+c.model # Pre-load
 print("I AM READY!\n\n")
 
 try:
