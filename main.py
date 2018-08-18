@@ -52,12 +52,11 @@ class BaseCorpus:
         while current[-1] != "__END__":
             current_word = current[-1]
             possibilites_counter = self.model[current_word]
-
-            i = random.randrange(sum(possibilites_counter.values()))
-
-            if i == 0:
+            s = sum(possibilites_counter.values())
+            if s == 0:
                 next_word = "__END__"  # Didn't find the word in the corpus
             else:
+                i = random.randrange(s)
                 next_word = next(itertools.islice(possibilites_counter.elements(), i, None))
 
             current.append(next_word)
