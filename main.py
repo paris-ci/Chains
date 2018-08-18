@@ -29,7 +29,7 @@ class BaseCorpus:
 
         if not s:
             s = 'None'
-            
+
         return s
 
     def make_short_sentence(self, chars: int = 140, more_or_less: int = 20):
@@ -137,7 +137,7 @@ class DuckHuntCorpus(BaseCorpus):
         return "\n".join(lines_parsed)
 
     def create_markov(self, text: str) -> markovify.NewlineText:
-        return markovify.NewlineText(text, state_size=4, retain_original=False)
+        return markovify.NewlineText(text, state_size=4) #retain_original=False)
 
     def load(self, file_name):
         start_time = time.time()
@@ -150,7 +150,7 @@ class DuckHuntCorpus(BaseCorpus):
 
 
 c = DuckHuntCorpus()
-c.save('model.json')
+#c.save('model.json')
 print("I AM READY!\n\n")
 
 try:
