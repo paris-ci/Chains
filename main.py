@@ -13,7 +13,7 @@ import itertools
 import requests
 from tqdm import tqdm
 
-coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)03d <%(levelname)s> %(message)s')
+coloredlogs.install(fmt='%(asctime)s,%(msecs)03d <%(levelname)s> %(message)s', level='DEBUG')
 logging.debug("hey")
 logging.info("Hello!")
 
