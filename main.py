@@ -90,7 +90,7 @@ class DuckHuntCorpus(BaseCorpus):
             start_length += 1
             line = line.decode()
             message = line.lower().strip()
-            message = unicodedata.normalize(message)
+            message = unicodedata.normalize('NFKD', message)
 
             if len(message) < 2:
                 continue
@@ -135,7 +135,7 @@ print("I AM READY!\n\n")
 
 try:
     while True:
-        print(c.make_sentence_with_start(unicodedata.normalize(input('>>> '))).capitalize())
+        print(c.make_sentence_with_start(unicodedata.normalize('NFKD', input('>>> '))).capitalize())
 except:
     print("bai!")
     raise
