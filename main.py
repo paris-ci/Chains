@@ -43,7 +43,7 @@ class BaseCorpus:
         model = collections.defaultdict(collections.Counter)
 
         for sentence in tqdm(sentences, desc="Processing corpus into the model"):
-            splitted = [''] * self.depth + sentence.split() + ['__END__']
+            splitted = [''] * (self.depth - 1) + sentence.split() + ['__END__']
 
             for i in range(len(splitted) - self.depth):
                 words_current = tuple(splitted[i:i+self.depth])
