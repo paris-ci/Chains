@@ -169,7 +169,7 @@ class DuckHuntCorpus(BaseCorpus):
             else:
                 lines_parsed.append(message)
 
-        lines_parsed = sorted(list(set(lines_parsed)))
+        lines_parsed = lines_parsed
 
         end_length = len(lines_parsed)
         end_time = time.time()
@@ -204,5 +204,5 @@ try:
         except WordNotFoundInCorpus as e:
             logging.warning(str(e))
 except:
-    print("bai!")
+    logging.exception("bai!")
     raise
