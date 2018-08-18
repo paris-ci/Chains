@@ -34,7 +34,7 @@ class BaseCorpus:
         return s
 
     def make_sentence_with_start(self, start: str):
-        s = self.model.make_sentence_with_start(start.lower(), strict=False)
+        s = self.model.make_sentence_with_start(start.lower().strip(), strict=False)
 
         return s
 
@@ -134,5 +134,8 @@ c = DuckHuntCorpus()
 c.save('model.json')
 print("I AM READY!\n\n")
 
-while True:
-    print(c.make_sentence_with_start(input('>>>')))
+try:
+    while True:
+        print(c.make_sentence_with_start(input('>>>')))
+except:
+    print("bai!")
