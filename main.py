@@ -37,6 +37,9 @@ class BaseCorpus:
     def make_sentence_with_start(self, start: str):
         s = self.model.make_sentence_with_start(start.lower().strip(), strict=False)
 
+        if not s:
+            s = 'None'
+
         return s
 
     def save(self, file_name):
