@@ -72,10 +72,10 @@ class BaseCorpus:
             except KeyError:
                 raise WordNotFoundInCorpus(f"Word(s) {list(current)} not found in corpus")
 
-            logging.debug(f"[Make sentence]\n  > [current] = {list(current)}\n  > [possibilities] = {possibilites_counter.most_common(5)}(...) \n  > [total] = {total}")
-
-
             s = sum(possibilites_counter.values())
+
+            logging.debug(f"[Make sentence]\n  > [current] = {list(current)}\n  > [possibilities] = {possibilites_counter.most_common(5)}(...) -> Total weight {s} \n  > [total] = {total}")
+
             if s == 0:
                 raise Exception
                 #  next_word = "__END__"  # Didn't find the word in the corpus
