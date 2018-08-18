@@ -138,3 +138,4 @@ try:
         print(c.make_sentence_with_start(unicodedata.normalize(input('>>> '))).capitalize())
 except:
     print("bai!")
+    raise
