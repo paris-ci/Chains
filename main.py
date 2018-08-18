@@ -187,6 +187,8 @@ try:
         if inp_ is None:
             inp_ = inp
 
+        inp_ = inp_.lower()
+
         try:
             print(c.make_sentence_with_start(inp_))
         except WordNotFoundInCorpus:
