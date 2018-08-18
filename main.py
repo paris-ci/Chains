@@ -1,7 +1,9 @@
 import collections
+import json
+import os
 import random
 import time
-import typing
+import pickle
 import unicodedata
 
 import coloredlogs
@@ -23,6 +25,7 @@ class WordNotFoundInCorpus(Exception):
 class BaseCorpus:
     def __init__(self):
         self.depth = 3
+        self.name = "base"
 
     @property
     def model(self) -> dict:
@@ -51,10 +54,22 @@ class BaseCorpus:
 
                 model[words_current][word_next] += 1
 
+        model = dict(model)
+
         end_time = time.time()
         logging.debug(f"Processing the corpus into the model took {round(end_time-start_time, 3)}s")
 
-        return dict(model)
+        # logging.debug("Saving model to cache!")
+
+        # start_time = time.time()
+        # with open(self.name + '.modelcache', 'wb') as f:
+        #     pickle.dump(model, f)
+
+        # end_time = time.time()
+
+        # logging.debug(f"Saved in {round(end_time-start_time, 3)}s!")
+
+        return model
 
     def make_sentence_with_start(self, start: str) -> str:
         current = collections.deque(maxlen=self.depth)
@@ -93,13 +108,30 @@ class BaseCorpus:
 class DuckHuntCorpus(BaseCorpus):
     def __init__(self):
         super().__init__()
+        self.name = 'DuckHunt'
         self.url = 'http://duckhunt.api-d.com/messages.txt'
         self._model = None
 
     @property
     def model(self):
         if self._model is None:
-            self._model = self.create_markov(self.process_corpus(self.download()))
+            # Corpus Cache ?
+            fname = self.name + '.corpuscache'
+            if os.path.isfile(fname) and time.time() - os.path.getmtime(fname) < 3600:  # Cache will expire after an hour
+                r = input("No corpus loaded, use cache [Y/n] >")
+
+                if r.lower() == 'n':
+                    corpus = self.process_corpus(self.download())
+                else:
+                    start_time = time.time()
+                    with open(fname, 'r') as f:
+                        corpus = json.load(f)
+
+                    end_time = time.time()
+                    logging.debug(f"Loading the corpus from cache took {round(end_time-start_time, 3)}s")
+            else:
+                corpus = self.process_corpus(self.download())
+            self._model = self.create_markov(corpus)
 
         return self._model
 
@@ -175,6 +207,18 @@ class DuckHuntCorpus(BaseCorpus):
         end_time = time.time()
 
         logging.debug(f"Fixing the corpus text took {round(end_time-start_time, 3)}s, and the corpus was trimmed from {start_length} to {end_length} lines (diff: {end_length-start_length})")
+
+
+
+        logging.debug("Saving corpus to cache!")
+
+        start_time = time.time()
+        with open(self.name + '.corpuscache', 'w') as f:
+            json.dump(lines_parsed, f)
+
+        end_time = time.time()
+
+        logging.debug(f"Saved in {round(end_time-start_time, 3)}s!")
 
         return lines_parsed
 
